@@ -36,7 +36,7 @@ public class CameraAim : MonoBehaviour
         float rotationY = mouseY * aimSensitivity;
 
         yRotationClamp += rotationY;
-        Debug.Log(yRotationClamp);
+        //Debug.Log(yRotationClamp);
 
         Vector3 rotation = this.transform.rotation.eulerAngles;
         Vector3 playerRotation = player.transform.rotation.eulerAngles;

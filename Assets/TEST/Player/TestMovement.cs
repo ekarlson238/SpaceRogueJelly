@@ -25,8 +25,9 @@ public class TestMovement : MonoBehaviour
 
     void Update()
     {
-        Move();
         Jump();
+        Move();
+        
     }
 
     /// <summary>
@@ -37,12 +38,12 @@ public class TestMovement : MonoBehaviour
         Vector3 velocityX = playerBody.velocity;
         Vector3 velocityY = playerBody.velocity;
 
-        vertical = Input.GetAxis("Vertical");
         horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
         
-        velocityY = Camera.main.transform.forward * vertical;
         velocityX = Camera.main.transform.right * horizontal;
-
+        velocityY = Camera.main.transform.forward * vertical;
+        
         velocity = Vector3.Normalize(velocityX + velocityY);
 
         velocity.y = playerBody.velocity.y / speed / Time.deltaTime;
