@@ -10,11 +10,17 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
 
     private bool canJump = false;
+    //TODO fix the name
+    private bool chargedJump = false;
+    [SerializeField]
+    private float chargedJumpingTime = 3;
+    private float chargedJumpingCounter = 0;
 
     private Vector3 v;
     private Vector3 h;
 
-    private float multiplier;
+    private float speedMultiplier;
+    private float jumpMultiplier;
 
     [SerializeField]
     private float gravity = 20;
@@ -27,7 +33,8 @@ public class PlayerMovement : MonoBehaviour
         v = Vector3.zero;
         h = Vector3.zero;
 
-        multiplier = 1;
+        speedMultiplier = 1;
+        jumpMultiplier = jumpForce;
 
         Physics.gravity = new Vector3(0, -gravity, 0);
     }
@@ -35,7 +42,11 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Move();
+        if (Input.GetAxis("Jump") == 0)
+        {
+            Move();
+        }
+
         Jump();
     }
 
@@ -45,30 +56,51 @@ public class PlayerMovement : MonoBehaviour
         {
             v = rb.transform.forward * Input.GetAxis("Vertical");
             h = rb.transform.right * Input.GetAxis("Horizontal");
-            multiplier = Mathf.Clamp(multiplier, speed / 3, speed);
+            speedMultiplier = Mathf.Clamp(speedMultiplier, speed / 3, speed);
         }
         else if (canJump)
         {
-            multiplier /= 2;
+            speedMultiplier /= 2;
         }
 
         if ((Input.GetAxis("Vertical") != 0 || Input.GetAxis("Horizontal") != 0) && canJump)
         {
-            multiplier *= speed / 5;
+            speedMultiplier *= speed / 5;
         }
 
-        multiplier = Mathf.Clamp(multiplier, 1, speed);
-        Vector3 total = Vector3.Normalize(v + h) * multiplier * Time.deltaTime;
+        speedMultiplier = Mathf.Clamp(speedMultiplier, 1, speed);
+        Vector3 total = Vector3.Normalize(v + h) * speedMultiplier * Time.deltaTime;
         rb.velocity = new Vector3(total.x, rb.velocity.y, total.z);
     }
 
     private void Jump()
     {
-        if (canJump)
+        if (canJump && Input.GetAxis("Jump") == 0)
         {
             canJump = false;
             rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+            if (jumpMultiplier == jumpForce)
+            {
+                rb.AddForce(Vector3.up * jumpMultiplier, ForceMode.Impulse);
+                jumpMultiplier = jumpForce;
+            }
+        }
+        else if (jumpMultiplier != jumpForce && !canJump && chargedJumpingCounter <= chargedJumpingTime)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, jumpMultiplier, rb.velocity.z);
+
+            chargedJumpingCounter += Time.deltaTime;
+        }
+        else if (canJump)
+        {
+            jumpMultiplier += Time.deltaTime * 3;
+            jumpMultiplier = Mathf.Clamp(jumpMultiplier, jumpForce, jumpMultiplier * 1.5f);
+        }
+        else
+        {
+            jumpMultiplier = jumpForce;
+            chargedJumpingCounter = 0;
         }
     }
 
